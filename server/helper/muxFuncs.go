@@ -29,19 +29,32 @@ type User struct {
 	LastName  string `json:"lastName"`
 	Access    uint   `json:"access"`
 }
+type AccessLevel uint
+
+const (
+	NoAccess AccessLevel = iota
+	WriteOnly
+	ReadOnly
+	FullAccess
+)
+
+func (d AccessLevel) String() string {
+	return [...]string{"NoAccess", "WriteOnly", "ReadOnly", "FullAccess"}[d]
+}
 
 type ErrorLog struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 }
 
-var Users []User // #GLOBAL variable
+// These variables could be made into a DB later.
+var Users []User
 var JobDB []Job
 var jobCounter int
 var Ch [100]chan bool
 
+// These should be salted and hashed later.
 var users = map[string]string{
-	// UserId: Password
 	"admin": "admin",
 	"read":  "read",
 	"write": "write",
@@ -49,9 +62,7 @@ var users = map[string]string{
 }
 
 func authWrapper(w http.ResponseWriter, r *http.Request, access map[int]bool) (string, bool) {
-
 	username, password, ok := r.BasicAuth()
-
 	if !ok {
 		log.Println("Error parsing basic auth")
 		w.WriteHeader(http.StatusUnauthorized)
