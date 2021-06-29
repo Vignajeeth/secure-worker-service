@@ -61,36 +61,71 @@ var users = map[string]string{
 	"no":    "no",
 }
 
-func authWrapper(w http.ResponseWriter, r *http.Request, access map[int]bool) (string, bool) {
-	username, password, ok := r.BasicAuth()
-	if !ok {
-		log.Println("Error parsing basic auth")
-		w.WriteHeader(http.StatusUnauthorized)
-		return "", false
+func checkPassword(inputPassword, storedPassword string) (string, bool) {
+	if storedPassword == inputPassword {
+		message := "Correct password."
+		log.Println(message)
+		return message, true
+	} else {
+		message := "Password is not correct."
+		log.Println(message)
+		return message, false
 	}
 
-	var userAccess int
+}
+
+func checkAccess(userAccess int, access map[int]bool) (string, bool) {
+	_, accessAllowed := access[userAccess]
+	if accessAllowed {
+		message := "Access granted."
+		log.Println(message)
+		return message, true
+	} else {
+		message := "Access denied."
+		log.Println(message)
+		return message, false
+	}
+
+}
+
+// authWrapper checks if the user is authorized to perform a certain job. If the bool is false, then the
+// string returns the reason for error. If true, it returns the username.
+func authWrapper(w http.ResponseWriter, r *http.Request, access map[int]bool) (string, string, bool) {
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		log.Println("Error parsing username and password")
+		w.WriteHeader(http.StatusUnauthorized)
+		return "", "Error parsing username and password", false
+	}
+
+	userAccess := -1
 	for i := range Users {
 		if Users[i].UserId == username {
 			userAccess = int(Users[i].Access)
 			break
 		}
 	}
+	if userAccess == -1 {
+		return "", "User is not present in the DB.", false
+	}
 
-	_, present := access[userAccess]
-	if val, ok := users[username]; ok {
-		if val == password && present {
+	if savedPassword, ok := users[username]; ok {
+
+		passwordMessage, isPasswordCorrect := checkPassword(password, savedPassword)
+		accessMessage, isAccessAllowed := checkAccess(userAccess, access)
+
+		// Authentication and authorisation successful.
+		if isPasswordCorrect && isAccessAllowed {
 			log.Printf("Authentication Successful")
 			w.WriteHeader(http.StatusOK)
-			return username, true
-
+			return username, "", true
 		} else {
-			log.Println("Credentials incorrect or access denied.")
-			w.WriteHeader(http.StatusUnauthorized)
-			return "", false
+
+			return "", passwordMessage + " " + accessMessage, false
+
 		}
 	}
-	return "", false
+	return "", "User is not present in the credentials data.", false
 }
 
 func GetTLSConfig(host, caCertFile string, clientAuth tls.ClientAuthType) *tls.Config {
@@ -110,9 +145,13 @@ func GetTLSConfig(host, caCertFile string, clientAuth tls.ClientAuthType) *tls.C
 
 func StartJob(w http.ResponseWriter, r *http.Request) {
 	log.Println("Start Job Hit.")
-	user, allowed := authWrapper(w, r, map[int]bool{1: true, 3: true})
+	user, erMessage, allowed := authWrapper(w, r, map[int]bool{1: true, 3: true})
 	if !allowed {
-		log.Println("Authentication Fail in StartJob")
+		log.Println("Authentication fail in StartJob")
+		e := ErrorLog{
+			Message: erMessage,
+		}
+		json.NewEncoder(w).Encode(e)
 		return
 	}
 
@@ -130,9 +169,13 @@ func StartJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetJob(w http.ResponseWriter, r *http.Request) { // Resouce not found. Do
-	_, allowed := authWrapper(w, r, map[int]bool{2: true, 3: true})
+	_, erMessage, allowed := authWrapper(w, r, map[int]bool{2: true, 3: true})
 	if !allowed {
 		log.Println("Authentication Fail in GetJob")
+		e := ErrorLog{
+			Message: erMessage,
+		}
+		json.NewEncoder(w).Encode(e)
 		return
 	}
 
@@ -154,9 +197,15 @@ func GetJob(w http.ResponseWriter, r *http.Request) { // Resouce not found. Do
 }
 
 func StopJob(w http.ResponseWriter, r *http.Request) {
-	_, allowed := authWrapper(w, r, map[int]bool{1: true, 3: true})
+	// User is not required because stopping jobs solely depends on access level of the user. Therefore
+	// any user with full access can stop any job by any other person.
+	_, erMessage, allowed := authWrapper(w, r, map[int]bool{1: true, 3: true})
 	if !allowed {
 		log.Println("Authentication Fail in StopJob")
+		e := ErrorLog{
+			Message: erMessage,
+		}
+		json.NewEncoder(w).Encode(e)
 		return
 	}
 
