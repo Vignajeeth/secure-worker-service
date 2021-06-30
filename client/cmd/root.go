@@ -16,12 +16,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "client",
 	Short: "CLI for connecting with the worker interface.",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  `This CLI is an easier way to work with the worker service without using cURL requests. It uses TLS 1.3 to secure data. It also has functionality to support different users.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

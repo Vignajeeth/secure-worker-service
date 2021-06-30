@@ -14,13 +14,12 @@ var (
 
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Creates and starts a given job.",
+	Long: `This command creates and starts a job. Some commands may not work unless it is enclosed in double quotes(""). Streaming commands like top doesn't work.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage:
+	./client start -u admin -p admin "sleep 10 && echo foo"
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		command := strings.Join(args, " ")
 		startRequest(command, userFlagstart, pwdFlagstart)

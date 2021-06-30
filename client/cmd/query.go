@@ -13,13 +13,17 @@ var (
 // queryCmd represents the query command
 var queryCmd = &cobra.Command{
 	Use:   "query",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Returns the status of a job given its job ID.",
+	Long: `This command queries the status of the job. The status code correspoding to the status is as follows:
+	Created:   0
+	Running:   1
+	Completed: 2
+	Failed:    3
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage:
+	./client query -u admin -p admin -i 2
+	
+	   `,
 	Run: func(cmd *cobra.Command, args []string) {
 		queryRequest(idFlagQuery, userFlagQuery, pwdFlagQuery)
 	},
