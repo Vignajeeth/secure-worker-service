@@ -19,10 +19,10 @@ func main() {
 	}
 
 	// Sample data
-	helper.Users = append(helper.Users, helper.User{UserId: "admin", FirstName: "admin", LastName: "admin", Access: uint(helper.FullAccess)})
-	helper.Users = append(helper.Users, helper.User{UserId: "read", FirstName: "read", LastName: "read", Access: uint(helper.ReadOnly)})
-	helper.Users = append(helper.Users, helper.User{UserId: "write", FirstName: "write", LastName: "write", Access: uint(helper.WriteOnly)})
-	helper.Users = append(helper.Users, helper.User{UserId: "no", FirstName: "no", LastName: "no", Access: uint(helper.NoAccess)})
+	helper.Users = append(helper.Users, helper.User{UserId: "admin", FirstName: "admin", LastName: "admin", Access: helper.AccessLevel(helper.FullAccess)})
+	helper.Users = append(helper.Users, helper.User{UserId: "read", FirstName: "read", LastName: "read", Access: helper.AccessLevel(helper.ReadOnly)})
+	helper.Users = append(helper.Users, helper.User{UserId: "write", FirstName: "write", LastName: "write", Access: helper.AccessLevel(helper.WriteOnly)})
+	helper.Users = append(helper.Users, helper.User{UserId: "no", FirstName: "no", LastName: "no", Access: helper.AccessLevel(helper.NoAccess)})
 
 	// Initialising a router.
 	r := mux.NewRouter()

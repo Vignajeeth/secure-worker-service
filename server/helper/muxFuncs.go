@@ -8,58 +8,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 )
-
-type Job struct {
-	ID        int       `json:"id"`
-	Status    uint      `json:"status"`
-	Command   string    `json:"command"`
-	UserId    string    `json:"user"` // Could be changed to the User struct.
-	StartTime time.Time `json:"startTime"`
-	StopTime  time.Time `json:"stopTime"`
-	Result    string    `json:"result"`
-}
-
-type User struct {
-	UserId    string `json:"userId"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Access    uint   `json:"access"`
-}
-type AccessLevel uint
-
-const (
-	NoAccess AccessLevel = iota
-	WriteOnly
-	ReadOnly
-	FullAccess
-)
-
-func (d AccessLevel) String() string {
-	return [...]string{"NoAccess", "WriteOnly", "ReadOnly", "FullAccess"}[d]
-}
-
-type ErrorLog struct {
-	Message string `json:"message"`
-	Code    int    `json:"code"`
-}
-
-// These variables could be made into a DB later.
-var Users []User
-var JobDB []Job
-var jobCounter int
-var Ch [100]chan bool
-
-// These should be salted and hashed later.
-var users = map[string]string{
-	"admin": "admin",
-	"read":  "read",
-	"write": "write",
-	"no":    "no",
-}
 
 func checkPassword(inputPassword, storedPassword string) (string, bool) {
 	if storedPassword == inputPassword {
@@ -121,7 +72,7 @@ func authWrapper(w http.ResponseWriter, r *http.Request, access map[int]bool) (s
 			return username, "", true
 		} else {
 
-			return "", passwordMessage + " " + accessMessage, false
+			return "", passwordMessage + " \n " + accessMessage, false
 
 		}
 	}

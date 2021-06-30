@@ -11,7 +11,7 @@ import (
 func CreateJob(commandString, issuedUser string, jobid int) *Job {
 	job := &Job{
 		ID:        jobid, //#CHANGE
-		Status:    0,
+		Status:    StatusCode(Created),
 		Command:   commandString,
 		UserId:    issuedUser,
 		StartTime: time.Now(),
@@ -37,7 +37,7 @@ func Workerlib(jobBody Job, jobid int, user string) Job {
 func wrapperFunc(j Job) {
 	for i := range JobDB {
 		if JobDB[i].ID == j.ID {
-			JobDB[i].Status = 1
+			JobDB[i].Status = StatusCode(Running)
 			break
 		}
 	}
@@ -47,11 +47,11 @@ func wrapperFunc(j Job) {
 	for i := range JobDB {
 		if JobDB[i].ID == j.ID {
 			if err != "" {
-				JobDB[i].Status = 3
+				JobDB[i].Status = StatusCode(Failed)
 				JobDB[i].Result = err
 				JobDB[i].StopTime = time.Now()
 			} else {
-				JobDB[i].Status = 2
+				JobDB[i].Status = StatusCode(Completed)
 				JobDB[i].Result = output
 				JobDB[i].StopTime = time.Now()
 			}
